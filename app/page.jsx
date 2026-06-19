@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Play, Mail, Film, Volume2, VolumeX } from 'lucide-react';
 
 // Кастомная иконка Instagram (замена удаленной из lucide-react)
@@ -92,6 +92,15 @@ export default function App() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [volume, setVolume] = useState(0.5); // Громкость по умолчанию на 50%
+  const videoRef = useRef(null);
+
+  // Синхронизация ползунка с реальной громкостью видео
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume;
+    }
+  }, [volume]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -133,6 +142,7 @@ export default function App() {
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0 bg-black">
           <video 
+            ref={videoRef}
             autoPlay 
             loop 
             muted={isMuted} 
@@ -143,13 +153,38 @@ export default function App() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/50 via-transparent to-[#0a0a0a]"></div>
         </div>
         
-        <button 
-          onClick={() => setIsMuted(!isMuted)}
-          className="absolute bottom-8 right-8 md:bottom-12 md:right-12 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:scale-105 transition-all duration-300"
-          title={isMuted ? "Включить звук" : "Выключить звук"}
-        >
-          {isMuted ? <VolumeX size={20} strokeWidth={1.5} /> : <Volume2 size={20} strokeWidth={1.5} />}
-        </button>
+{/* Панель управления звуком (кнопка + выезжающий ползунок) */}
+        <div className="absolute bottom-8 right-8 md:bottom-12 md:right-12 z-20 flex items-center bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-full p-1 transition-all duration-500 group">
+          
+          <button 
+            onClick={() => setIsMuted(!isMuted)}
+            className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white transition-colors shrink-0"
+            title={isMuted ? "Включить звук" : "Выключить звук"}
+          >
+            {isMuted || volume === 0 ? <VolumeX size={20} strokeWidth={1.5} /> : <Volume2 size={20} strokeWidth={1.5} />}
+          </button>
+
+          {/* Ползунок громкости (ширина 0 по умолчанию, раскрывается при наведении на группу) */}
+          <div className="w-0 overflow-hidden group-hover:w-20 md:group-hover:w-24 transition-all duration-500 ease-in-out flex items-center">
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={isMuted ? 0 : volume}
+              onChange={(e) => {
+                const newVolume = parseFloat(e.target.value);
+                setVolume(newVolume);
+                // Автоматически снимаем мут, если начали тянуть ползунок
+                if (isMuted && newVolume > 0) setIsMuted(false);
+                // Ставим мут, если утянули в ноль
+                if (!isMuted && newVolume === 0) setIsMuted(true);
+              }}
+              className="w-full h-1 mr-3 bg-white/30 rounded-lg appearance-none cursor-pointer accent-white"
+            />
+          </div>
+
+        </div>
       </section>
 
       <section id="work" className="px-4 py-20 md:px-12 max-w-[1600px] mx-auto">
