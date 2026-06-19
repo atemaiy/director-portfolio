@@ -1,3 +1,4 @@
+// components/HeroSection.jsx
 import { Volume2, VolumeX } from 'lucide-react';
 
 export const HeroSection = ({ videoRef, isMuted, volume, toggleMute, handleVolumeChange }) => {
@@ -21,13 +22,13 @@ export const HeroSection = ({ videoRef, isMuted, volume, toggleMute, handleVolum
         
         <button 
           onClick={toggleMute}
-          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full text-gray-300 hover:text-white transition-colors shrink-0"
+          className="w-12 h-12 md:w-12 md:h-12 flex items-center justify-center rounded-full text-gray-300 hover:text-white transition-colors shrink-0 cursor-pointer"
           title={isMuted ? "Включить звук" : "Выключить звук"}
         >
           {isMuted || volume === 0 ? <VolumeX size={20} strokeWidth={1.5} /> : <Volume2 size={20} strokeWidth={1.5} />}
         </button>
 
-        {/* Ползунок громкости (скрыт на мобильных, так как нет hover, доступен только на десктопе md:flex) */}
+        {/* Ползунок громкости (скрыт на мобильных) */}
         <div className="hidden md:flex w-0 overflow-hidden group-hover:w-24 transition-all duration-500 ease-in-out items-center">
           <input
             type="range"
